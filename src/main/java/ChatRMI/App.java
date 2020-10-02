@@ -3,12 +3,19 @@
  */
 package ChatRMI;
 
-public class App {
-    public String getGreeting() {
-        return "Hello world.";
-    }
+import ChatRMI.peer.FinestraChat;
+import ChatRMI.peer.GestoreMessaggi;
+import ChatRMI.peer.InterfacciaFinestraChat;
+import ChatRMI.peer.InterfacciaGestoreMessaggi;
 
+public class App {
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+
+        InterfacciaGestoreMessaggi gestoreMessaggi = new GestoreMessaggi();
+        InterfacciaFinestraChat finestraChat = new FinestraChat();
+        gestoreMessaggi.legaFinestra(finestraChat);
+        finestraChat.legaGestore(gestoreMessaggi);
+
+        
     }
 }
