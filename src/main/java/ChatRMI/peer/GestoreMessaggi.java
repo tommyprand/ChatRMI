@@ -4,52 +4,55 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.Vector;
+import java.util.Hashtable;
 
 import ChatRMI.Messaggio;
 import ChatRMI.serverUtenti.InterfacciaServerUtenti;
 
 public class GestoreMessaggi implements InterfacciaPeer, InterfacciaGestoreMessaggi {
 
-    private Vector<Messaggio> cronologiaMessaggi;
+    public static final String IPRegistry = "localhost";
+
+    private String nomeUtente;
+    private InterfacciaServerUtenti intServer;
     private InterfacciaFinestraChat finestraChat;
+    private Hashtable<String, InterfacciaPeer> listaUtenti;
+
+    public GestoreMessaggi(String nomeUtente) throws RemoteException, MalformedURLException, NotBoundException {
+        InterfacciaServerUtenti intServer = (InterfacciaServerUtenti) Naming.lookup("rmi://" + IPRegistry + "/ServerUtenti");
+        intServer.registra(nomeUtente, this);
+        this.nomeUtente = nomeUtente;
+        listaUtenti = intServer.getListaUtenti();
+    }
 
     @Override
-    public void invia(Messaggio msg) {
-        String IPserverUtenti = "localhost";
+    public void invia(String dest, String cont) {
+        Messaggio msg = new Messaggio(nomeUtente, dest, cont);
+        InterfacciaPeer stubDestinatario = listaUtenti.get(msg.getNickDestinatario());
         try {
-            InterfacciaServerUtenti intServer = (InterfacciaServerUtenti) Naming.lookup("rmi://" + IPserverUtenti + "/ServerUtenti");
-            InterfacciaPeer stubDestinatario = intServer.getListaUtenti().get(msg.getNickDestinatario());
             stubDestinatario.ricevi(msg);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } catch (NotBoundException e) {
-            e.printStackTrace();
+            finestraChat.aggiorna(msg);
         }
-        cronologiaMessaggi.add(msg);
-        finestraChat.aggiorna();
+        catch (RemoteException e) {
+            e.printStackTrace();
+            try {
+                listaUtenti = intServer.getListaUtenti();
+            }
+            catch (RemoteException e1) {
+                e1.printStackTrace();
+            }
+        }
+        
+        
     }
+    
 
     @Override
-    public Vector<Messaggio> leggi(int inizio, int fine) {
-        return (Vector<Messaggio>) cronologiaMessaggi.subList(inizio, fine);
-    }
-
-    @Override
-    public void ricevi(Messaggio msg) {
-        cronologiaMessaggi.add(msg);
-        finestraChat.aggiorna();
+    public void ricevi(Messaggio msg) throws RemoteException {
+        finestraChat.aggiorna(msg);
     }
 
     public void legaFinestra(InterfacciaFinestraChat finestraChat) {
         this.finestraChat = finestraChat;
     }
-
-    @Override
-    public int getNumeroMessaggi() {
-        return cronologiaMessaggi.size();
-    }
-    
 }

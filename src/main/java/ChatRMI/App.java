@@ -3,6 +3,8 @@
  */
 package ChatRMI;
 
+import javax.swing.JOptionPane;
+
 import ChatRMI.peer.FinestraChat;
 import ChatRMI.peer.GestoreMessaggi;
 import ChatRMI.peer.InterfacciaFinestraChat;
@@ -11,10 +13,19 @@ import ChatRMI.peer.InterfacciaGestoreMessaggi;
 public class App {
     public static void main(String[] args) {
 
-        InterfacciaGestoreMessaggi gestoreMessaggi = new GestoreMessaggi();
-        InterfacciaFinestraChat finestraChat = new FinestraChat();
-        gestoreMessaggi.legaFinestra(finestraChat);
-        finestraChat.legaGestore(gestoreMessaggi);
+
+        String nomeUtente = JOptionPane.showInputDialog(null, "Inserisci il nome utente", "Nome utente", JOptionPane.QUESTION_MESSAGE);
+        InterfacciaGestoreMessaggi gestoreMessaggi;
+        InterfacciaFinestraChat finestraChat;
+        try {
+            gestoreMessaggi = new GestoreMessaggi(nomeUtente);
+            finestraChat = new FinestraChat();
+            gestoreMessaggi.legaFinestra(finestraChat);
+            finestraChat.legaGestore(gestoreMessaggi);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
 
         
     }
